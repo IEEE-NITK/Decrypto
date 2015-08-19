@@ -1,0 +1,1 @@
+# Contains encoder code window
