@@ -1,0 +1,1 @@
+# Contains decoder window coder.
