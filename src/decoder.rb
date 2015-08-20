@@ -21,10 +21,16 @@ class Client
     end
   end
 
+  def solve
+    str = $stdin.gets.chomp
+    return "solve:"+str
+  end
+
   def choose_option(option)
     case option
     when 1 then return 'scoreboard'
     when 2 then return 'listing'
+    when 3 then return solve
     end
   end
 
@@ -37,6 +43,7 @@ class Client
         puts "*************************\nWelcome to Decrypto. Choose one of the options:"
         puts "1. Scoreboard"
         puts "2. Check cipher listing"
+        puts "3. Solve a cipher: (CipherNumber:Decrypted Text)"
         option = $stdin.gets.chomp
         msg = choose_option(option.to_i)
         @server.puts( msg )
