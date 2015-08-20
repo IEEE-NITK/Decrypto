@@ -13,7 +13,7 @@ class Server
 
     # Game data
     @score = Hash.new
-    @public_ciphers = Hash.new
+    @public_ciphers = []
     
     run
   end
@@ -38,27 +38,40 @@ class Server
       new_cipher[:cipher]  = data[1]
       new_cipher[:comment] = data[2]
 
-      puts new_cipher.inspect
-
       t_name = @users[username][:team]
-      puts t_name
-  		@public_ciphers[t_name].push new_cipher
+      new_cipher[:team] = t_name
+
+
+  		@public_ciphers.push new_cipher
+      @score[t_name] -= 5
       return "Published."
 
   	elsif message.include? 'listing'
-      puts @public_ciphers.inspect
-      c_l = ''
+      c_l = "**************\n\n"
+      count=1
 
-      @public_ciphers.each do |team, array|
-        c_l += "Cipher listing for team #{team}: \n"
-        for c_hash in array
-          puts hash.inspect
-          c_l += "Ciphetext: #{c_hash[:cipher]}, Comment: #{c_hash[:comment]}\n"
-        end
-        c_l += "**************"
+      @public_ciphers.each do |c_hash|
+        c_l += "#{count}. Ciphetext: #{c_hash[:cipher]}, Comment: #{c_hash[:comment]}, Team: #{c_hash[:team]}\n"
+        count+=1
       end
 
       return c_l
+    elsif message.include? 'solve'
+      puts message.inspect
+      solve, number, text = message.split(':')
+      cipher = @public_ciphers[(number.to_i)-1]
+      t_name = @users[username][:team]
+
+      if cipher[:plain] == text and cipher[:team] == t_name
+        @score[t_name] += 10
+        return "Solved your own cipher!"
+      elsif cipher[:plain] == text and cipher[:team] != t_name
+        @score[t_name] += 2
+        @score[cipher[:team]] -= 1
+        return "Solved other teams' cipher."
+      else
+        return "Wrong submission"
+      end
     end
   end
 
@@ -82,7 +95,6 @@ class Server
         @users[u_name][:team] = t_name
 
         @score[t_name] = 0
-        @public_ciphers[t_name] = []
         
         listen_user_messages( u_name, client )
       end
