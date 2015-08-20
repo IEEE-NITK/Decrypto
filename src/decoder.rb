@@ -3,6 +3,7 @@
 require "socket"
 class Client
   def initialize( server )
+    @flag = 0
     @server = server
     @request = nil
     @response = nil
@@ -15,18 +16,31 @@ class Client
   def listen
     @response = Thread.new do
       loop {
-        msg = @server.gets.chomp
-        puts "#{msg}"
+        if @flag==0
+          msg = @server.gets.chomp
+          puts "#{msg}"
       }
+    end
+  end
+
+  def choose_option(option)
+    case option
+    when 1 then return 'scoreboard'
+    when 2 then return 'listing'
     end
   end
 
   def send
     puts "Enter the username:"
+    msg = $stdin.gets.chomp
+    @server.puts(msg)    
     @request = Thread.new do
       loop {
-      	print '>'
-        msg = $stdin.gets.chomp
+        puts "*************************\nWelcome to Decrypto. Choose one of the options:"
+        puts "1. Scoreboard"
+        puts "2. Check cipher listing"
+        option = $stdin.gets.chomp
+        msg = choose_option(option.to_i)
         @server.puts( msg )
       }
     end

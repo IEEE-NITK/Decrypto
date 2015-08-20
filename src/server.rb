@@ -45,7 +45,23 @@ class Server
   		@public_ciphers[username]['list'].push new_cipher
 
       return "Done."
-  	end
+  	elsif message.include? 'listing'
+      cipher_listing = ''
+
+      @public_ciphers.each do |user, val|
+        cipher_listing +="Ciphers for #{user}:\n"
+        val.each do |listing, arr|
+          arr.each do |cipher|
+            cipher_listing+= "Plaintext:"
+            cipher_listing+= cipher['plain'] + "\n"
+            cipher_listing+= "Comment:"
+            cipher_listing+= cipher['comment']+"\n"
+          end
+        end
+      end
+
+      return cipher_listing
+    end
   end
 
   # Used to fork a thread for every new connection.
