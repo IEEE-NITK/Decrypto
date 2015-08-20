@@ -52,15 +52,15 @@ class Client
   # Needs to be polished.
   def send
     puts "Enter the username:"
+    msg = $stdin.gets.chomp
+    @server.puts(msg)
     @request = Thread.new do
       loop {
-        msg = $stdin.gets.chomp
-        puts "Welcome to Decrypto. Choose one of the options:"
+        puts "*************************\nWelcome to Decrypto. Choose one of the options:"
         puts "1. Scoreboard"
         puts "2. Generate a random string and publicize."
         option = $stdin.gets.chomp
         msg = choose_option(option.to_i)
-        puts msg.inspect
         @server.puts( msg )
       }
     end
