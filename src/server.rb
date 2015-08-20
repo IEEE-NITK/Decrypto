@@ -22,8 +22,12 @@ class Server
   def parse_message(message, username)
   	if message.include? 'scoreboard'
   		# Used to show the game scoreboard
-  		return "Scoreboard:"
+  		s_b = "*********************\n\n"
+      @score.each do |team, current_score|
+        s_b += "#{team}: #{current_score}\n"
+      end
 
+      return s_b
   	elsif message.include? 'plain->' and message.include? 'cipher->' and message.include? 'comment->'
   		data = []
   		######
