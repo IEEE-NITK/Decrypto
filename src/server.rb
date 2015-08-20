@@ -9,13 +9,10 @@ class Server
     @server = TCPServer.open( ip, port )
     
     # Contains client connection details
-    @connections = Hash.new
-    @clients = Hash.new
-    @connections[:server] = @server
-    @connections[:clients] = @clients
+    @users = Hash.new
 
     # Game data
-    @scoreboard = Hash.new
+    @score = Hash.new
     @public_ciphers = Hash.new
     
     run
@@ -26,11 +23,10 @@ class Server
   	if message.include? 'scoreboard'
   		# Used to show the game scoreboard
   		return "Scoreboard:"
+
   	elsif message.include? 'plain->' and message.include? 'cipher->' and message.include? 'comment->'
   		data = []
-  		
   		######
-
   		# The following code segment is used to extract plaintext, ciphertext and comment from the Encoder
   		message.split(',').each do |str|
   			data.push str.split('->')[1]
@@ -38,29 +34,31 @@ class Server
 
       new_cipher = Hash.new
 
-      new_cipher['plain'] = data[0]
-      new_cipher['cipher'] = data[1]
-      new_cipher['comment'] = data[2]
+      new_cipher[:plain]   = data[0]
+      new_cipher[:cipher]  = data[1]
+      new_cipher[:comment] = data[2]
 
-  		@public_ciphers[username]['list'].push new_cipher
+      puts new_cipher.inspect
 
-      return "Done."
+      t_name = @users[username][:team]
+      puts t_name
+  		@public_ciphers[t_name].push new_cipher
+      return "Published."
+
   	elsif message.include? 'listing'
-      cipher_listing = ''
+      puts @public_ciphers.inspect
+      c_l = ''
 
-      @public_ciphers.each do |user, val|
-        cipher_listing +="Ciphers for #{user}:\n"
-        val.each do |listing, arr|
-          arr.each do |cipher|
-            cipher_listing+= "Plaintext:"
-            cipher_listing+= cipher['plain'] + "\n"
-            cipher_listing+= "Comment:"
-            cipher_listing+= cipher['comment']+"\n"
-          end
+      @public_ciphers.each do |team, array|
+        c_l += "Cipher listing for team #{team}: \n"
+        for c_hash in array
+          puts hash.inspect
+          c_l += "Ciphetext: #{c_hash[:cipher]}, Comment: #{c_hash[:comment]}\n"
         end
+        c_l += "**************"
       end
 
-      return cipher_listing
+      return c_l
     end
   end
 
@@ -68,25 +66,25 @@ class Server
   def run
     loop {
       Thread.start(@server.accept) do | client |
-        nick_name = client.gets.chomp.to_sym
-        @connections[:clients].each do |other_name, other_client|
-          if nick_name == other_name || client == other_client
+        type, t_name, u_name = client.gets.chomp.split(':')
+
+        @users.each do |username, details|
+          if username == u_name
             client.puts "This username already exists."
             Thread.kill self
           end
         end
-        puts "#{nick_name} #{client}"
-        @connections[:clients][nick_name] = client
-        
-        #############
-        # Game data #
-        #############
 
-        @scoreboard[nick_name] = 0
-        @public_ciphers[nick_name] = Hash.new
-        @public_ciphers[nick_name]['list'] = []
+        u_name = u_name.to_sym
+
+        @users[u_name] = Hash.new
+        @users[u_name][:type] = type
+        @users[u_name][:team] = t_name
+
+        @score[t_name] = 0
+        @public_ciphers[t_name] = []
         
-        listen_user_messages( nick_name, client )
+        listen_user_messages( u_name, client )
       end
     }.join
   end

@@ -51,9 +51,9 @@ class Client
 
   # Needs to be polished.
   def send
-    puts "Enter the username:"
+    puts "Encoder Login(TeamName:Username):"
     msg = $stdin.gets.chomp
-    @server.puts(msg)
+    @server.puts("encoder:"+msg)
     @request = Thread.new do
       loop {
         puts "*************************\nWelcome to Decrypto. Choose one of the options:"

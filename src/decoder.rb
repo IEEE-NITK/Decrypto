@@ -1,9 +1,8 @@
 # Contains Decoder code
-# Yet to be implemented
+
 require "socket"
 class Client
   def initialize( server )
-    @flag = 0
     @server = server
     @request = nil
     @response = nil
@@ -16,7 +15,6 @@ class Client
   def listen
     @response = Thread.new do
       loop {
-        if @flag==0
           msg = @server.gets.chomp
           puts "#{msg}"
       }
@@ -31,9 +29,9 @@ class Client
   end
 
   def send
-    puts "Enter the username:"
+    puts "Decoder Login(TeamName:Username):"
     msg = $stdin.gets.chomp
-    @server.puts(msg)    
+    @server.puts('decoder:'+msg)    
     @request = Thread.new do
       loop {
         puts "*************************\nWelcome to Decrypto. Choose one of the options:"
