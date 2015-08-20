@@ -1,5 +1,4 @@
 # Contains Encoder code
-# Yet to be implemented
 
 require "socket"
 class Client
