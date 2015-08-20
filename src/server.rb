@@ -8,7 +8,7 @@ class Server
   	# Used to open the TCP socket on the given port
     @server = TCPServer.open( ip, port )
     
-    # Contains client connection details
+    # Contains details of users connected to the server.
     @users = Hash.new
 
     # Game data
@@ -18,23 +18,27 @@ class Server
     run
   end
 
-  # All messages coming from the Encoder/Decoder are structured in a specific format. Function parses the incoming string and runs appropriate functions.
+  # Used to parse messages incoming to the server. Takes appropriate action.
   def parse_message(message, username)
   	if message.include? 'scoreboard'
-  		# Used to show the game scoreboard
-  		s_b = "*********************\n\n"
+  		
+      # Needs to be beautified.
       @score.each do |team, current_score|
         s_b += "#{team}: #{current_score}\n"
       end
 
       return s_b
-  	elsif message.include? 'plain->' and message.include? 'cipher->' and message.include? 'comment->'
-  		data = []
-  		######
-  		# The following code segment is used to extract plaintext, ciphertext and comment from the Encoder
+  	
+    elsif message.include? 'plain->' and message.include? 'cipher->' and message.include? 'comment->'
+
+      data = []
+
+  		# The following code segment is used to extract plaintext, ciphertext and comment
   		message.split(',').each do |str|
   			data.push str.split('->')[1]
   		end
+
+      # new_cipher is used to store cipher-related data.
 
       new_cipher = Hash.new
 
@@ -42,16 +46,23 @@ class Server
       new_cipher[:cipher]  = data[1]
       new_cipher[:comment] = data[2]
 
-      t_name = @users[username][:team]
-      new_cipher[:team] = t_name
+      team_name = @users[username][:team]
+      new_cipher[:team] = team_name
 
-
+      # Adds the new cipher to the existing list
   		@public_ciphers.push new_cipher
-      @score[t_name] -= 5
+
+      # Reduce team score for publishing a cipher by 5
+      @score[team_name] -= 5
+      
       return "Published."
 
   	elsif message.include? 'listing'
-      c_l = "**************\n\n"
+      
+      # Needs beautification
+      c_l = ""
+
+      # Variable for indexing into the cipher array
       count=1
 
       @public_ciphers.each do |c_hash|
@@ -59,23 +70,31 @@ class Server
         count+=1
       end
 
+      # Returns list of all ciphers with team name and comment
       return c_l
+    
     elsif message.include? 'solve'
-      puts message.inspect
-      solve, number, text = message.split(':')
-      cipher = @public_ciphers[(number.to_i)-1]
-      t_name = @users[username][:team]
 
-      if cipher[:plain] == text and cipher[:team] == t_name
-        @score[t_name] += 10
+      # Split message to get all fields
+      solve, number, text = message.split(':')
+      
+      # Cipher the user wants to solve
+      cipher = @public_ciphers[(number.to_i)-1]
+      team_name = @users[username][:team]
+
+      if cipher[:plain] == text and cipher[:team] == team_name
+        @score[team_name] += 10
         return "Solved your own cipher!"
-      elsif cipher[:plain] == text and cipher[:team] != t_name
-        @score[t_name] += 2
+      
+      elsif cipher[:plain] == text and cipher[:team] != team_name
+        @score[team_name] += 2
         @score[cipher[:team]] -= 1
         return "Solved other teams' cipher."
+      
       else
         return "Wrong submission"
       end
+
     end
   end
 
@@ -92,12 +111,11 @@ class Server
           end
         end
 
-        u_name = u_name.to_sym
-
+        # Initialize User
         @users[u_name] = Hash.new
-        @users[u_name][:type] = type
         @users[u_name][:team] = t_name
 
+        # Initialize score
         @score[t_name] = 0
         
         listen_user_messages( u_name, client )

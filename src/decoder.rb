@@ -21,11 +21,13 @@ class Client
     end
   end
 
+  # Take answer as input and send to server for validation
   def solve
     str = $stdin.gets.chomp
     return "solve:"+str
   end
 
+  # User choice
   def choose_option(option)
     case option
     when 1 then return 'scoreboard'
@@ -34,6 +36,7 @@ class Client
     end
   end
 
+  # Needs to be polished.
   def send
     puts "Decoder Login(TeamName:Username):"
     msg = $stdin.gets.chomp
