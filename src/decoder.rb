@@ -10,6 +10,7 @@ class Client
     send
     @request.join
     @response.join
+    @t_name = nil
   end
 
   def listen
@@ -21,24 +22,32 @@ class Client
     end
   end
 
-  def choose_option(option)
+  def choose_option(option, t_name)
     case option
-    when 1 then return 'scoreboard'
-    when 2 then return 'listing'
+    when 1
+      return 'scoreboard'
+    when 2
+      return 'listing'
+    when 3
+      puts "Enter all (TeamName:Cipher:Plaintext):"
+      str = $stdin.gets.chomp
+      return "guessing->#{str}->#{t_name}"
     end
   end
 
   def send
     puts "Decoder Login(TeamName:Username):"
     msg = $stdin.gets.chomp
+    @t_name = msg.split(":")[0]
     @server.puts('decoder:'+msg)    
     @request = Thread.new do
       loop {
         puts "*************************\nWelcome to Decrypto. Choose one of the options:"
         puts "1. Scoreboard"
         puts "2. Check cipher listing"
+        puts "3. Enter plaintext for cipher"
         option = $stdin.gets.chomp
-        msg = choose_option(option.to_i)
+        msg = choose_option(option.to_i, @t_name)
         @server.puts( msg )
       }
     end

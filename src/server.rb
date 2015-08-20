@@ -31,7 +31,7 @@ class Server
   end
 
   # All messages coming from the Encoder/Decoder are structured in a specific format. Function parses the incoming string and runs appropriate functions.
-  def parse_message(message, username)
+  def parse_message(message, username, client)
     if message.include? 'scoreboard'
       # Used to show the game scoreboard
       score_str = get_score
@@ -74,6 +74,24 @@ class Server
       end
 
       return c_l
+    elsif message.include? 'guessing'
+      cipher_t_name, cipher, plaintext = message.split("->")[1].split(":")
+      own_t_name = message.split("->")[2]
+      @public_ciphers[cipher_t_name].each do |p_c|
+        if p_c[:cipher] == cipher
+          if p_c[:plaintext] == plaintext
+            if cipher_t_name == own_t_name
+              update_score(own_t_name, OWN_CIPHER_SOLVED)
+            else
+              update_score(own_t_name, OTHER_CIPHER_SOLVED)
+              update_score(cipher_t_name, OWN_CIPHER_SOLVED_BY_OTHER)
+            end
+            return "Succesfully solved cipher."
+          else
+            return "Please try again."
+          end
+        end
+      end
     end
   end
 
@@ -108,7 +126,7 @@ class Server
   def listen_user_messages( username, client )
     loop {
       msg = client.gets.chomp
-      str = parse_message(msg, username)
+      str = parse_message(msg, username, client)
       client.puts str
     }
   end
