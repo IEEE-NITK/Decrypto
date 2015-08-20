@@ -25,24 +25,26 @@ class Server
   def parse_message(message, username)
   	if message.include? 'scoreboard'
   		# Used to show the game scoreboard
-  		return "Scorebaord:"
+  		return "Scoreboard:"
   	elsif message.include? 'plain->' and message.include? 'cipher->' and message.include? 'comment->'
-  		# puts message.inspect
   		data = []
   		
   		######
 
   		# The following code segment is used to extract plaintext, ciphertext and comment from the Encoder
-  		arr = message.split(',').each do |str|
+  		message.split(',').each do |str|
   			data.push str.split('->')[1]
   		end
-  		@public_ciphers[username][plain] 	= data[0]
-  		@public_ciphers[username][cipher] 	= data[1]
-  		@public_ciphers[username][comment] 	= data[2]
 
-  		######
+      new_cipher = Hash.new
 
-  		return "Done."
+      new_cipher['plain'] = data[0]
+      new_cipher['cipher'] = data[1]
+      new_cipher['comment'] = data[2]
+
+  		@public_ciphers[username]['list'].push new_cipher
+
+      return "Done."
   	end
   end
 
@@ -66,18 +68,19 @@ class Server
 
         @scoreboard[nick_name] = 0
         @public_ciphers[nick_name] = Hash.new
+        @public_ciphers[nick_name]['list'] = []
         
         listen_user_messages( nick_name, client )
       end
     }.join
   end
 
-  # Listens for used messages.
+  # Listens for user messages.
   def listen_user_messages( username, client )
     loop {
       msg = client.gets.chomp
       str = parse_message(msg, username)
-      # client.puts str.inspect
+      client.puts str
     }
   end
 end
