@@ -1,24 +1,21 @@
 # Contains Decoder code
-
+require "highline/import"
 require "socket"
+require 'thread'
+
 class Client
   def initialize( server )
     @server = server
-    @request = nil
-    @response = nil
-    listen
-    send
-    @request.join
-    @response.join
-  end
 
-  def listen
-    @response = Thread.new do
-      loop {
-          msg = @server.gets.chomp
-          puts "#{msg}"
-      }
-    end
+    @prompt = "*************************************************\n"
+    @prompt += "Welcome to Decrypto. Choose one of the options: *\n"
+    @prompt += "1. Scoreboard                                   *\n"
+    @prompt += "2. Check cipher listing                         *\n"
+    @prompt += "3. Solve a cipher: (CipherNumber:Decrypted Text)*\n"
+    @prompt += "*************************************************\n\n"
+    @prompt += "> "
+    
+    send
   end
 
   # Take answer as input and send to server for validation
@@ -41,17 +38,20 @@ class Client
     puts "Decoder Login(TeamName:Username):"
     msg = $stdin.gets.chomp
     @server.puts('decoder:'+msg)    
-    @request = Thread.new do
-      loop {
-        puts "*************************\nWelcome to Decrypto. Choose one of the options:"
-        puts "1. Scoreboard"
-        puts "2. Check cipher listing"
-        puts "3. Solve a cipher: (CipherNumber:Decrypted Text)"
-        option = $stdin.gets.chomp
-        msg = choose_option(option.to_i)
-        @server.puts( msg )
-      }
+    msg = @server.gets("\0").chomp("\0")
+
+    if msg.include? "Invalid"
+      puts "#{msg}"
+      return
     end
+
+    loop {
+      option = ask @prompt
+      msg = choose_option(option.to_i)
+      @server.puts( msg )
+      msg = @server.gets("\0").chomp("\0")
+      puts "#{msg}"        
+    }
   end
 end
 

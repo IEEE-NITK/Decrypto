@@ -1,24 +1,20 @@
 # Contains Encoder code
-
+require "highline/import"
 require "socket"
+require 'thread'
+
 class Client
   def initialize( server )
     @server = server
-    @request = nil
-    @response = nil
-    listen
-    send
-    @request.join
-    @response.join
-  end
 
-  def listen
-    @response = Thread.new do
-      loop {
-        msg = @server.gets.chomp
-        puts "#{msg}"
-      }
-    end
+    @prompt = "*************************************************\n"
+    @prompt += "Welcome to Decrypto. Choose one of the options: *\n"
+    @prompt += "1. Scoreboard                                   *\n"
+    @prompt += "2. Generate a cipher!                           *\n"
+    @prompt += "*************************************************\n\n"
+    @prompt += "> "
+
+    send
   end
 
   # Used to generate a random string of 10(subject to change) characters and format the plaintext, ciphertext and comment in a way so that the server understands the structure of the string.
@@ -26,6 +22,7 @@ class Client
     str = (0...10).map { ('a'..'z').to_a[rand(26)] }.join
     
     # Asking for cipher from EaaS
+    puts "\n************************************************\n"
     puts "Your random string is - #{str}"
     puts "Enter the ciphertext using the EaaS provided -"
     cipher = $stdin.gets.chomp
@@ -53,16 +50,20 @@ class Client
     puts "Encoder Login(TeamName:Username):"
     msg = $stdin.gets.chomp
     @server.puts("encoder:"+msg)
-    @request = Thread.new do
-      loop {
-        puts "*************************\nWelcome to Decrypto. Choose one of the options:"
-        puts "1. Scoreboard"
-        puts "2. Generate a random string and publicize."
-        option = $stdin.gets.chomp
-        msg = choose_option(option.to_i)
-        @server.puts( msg )
-      }
+    msg = @server.gets("\0").chomp("\0")
+
+    if msg.include? "Invalid"
+      puts "#{msg}"
+      return
     end
+
+    loop {
+      option = ask @prompt
+      msg = choose_option(option.to_i)
+      @server.puts( msg )
+      msg = @server.gets("\0").chomp("\0")
+      puts "#{msg}"         
+    }
   end
 end
 

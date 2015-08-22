@@ -1,6 +1,7 @@
 # Contains Server Code
-
+require "highline/import"
 require "socket"
+
 class Server
   
   # Used to initialize server variables 
@@ -21,12 +22,19 @@ class Server
   # Used to parse messages incoming to the server. Takes appropriate action.
   def parse_message(message, username)
   	if message.include? 'scoreboard'
-  		
+  		  
+      s_b = ""
+      s_b += "************************************************\n"
+
+      temp_score = @score
+      temp_score.sort_by {|key, value| value}.reverse
+
       # Needs to be beautified.
-      @score.each do |team, current_score|
+      temp_score.each do |team, current_score|
         s_b += "#{team}: #{current_score}\n"
       end
 
+      s_b += "************************************************\n\n\0"
       return s_b
   	
     elsif message.include? 'plain->' and message.include? 'cipher->' and message.include? 'comment->'
@@ -55,13 +63,18 @@ class Server
       # Reduce team score for publishing a cipher by 5
       @score[team_name] -= 5
       
-      return "Published."
+      pub = ""
+      pub += "*************************************************\n"
+      pub += "Published.\n"
+      pub += "*************************************************\n\0"
+
+      return pub
 
   	elsif message.include? 'listing'
       
       # Needs beautification
       c_l = ""
-
+      c_l += "*************************************************\n"
       # Variable for indexing into the cipher array
       count=1
 
@@ -69,6 +82,8 @@ class Server
         c_l += "#{count}. Ciphetext: #{c_hash[:cipher]}, Comment: #{c_hash[:comment]}, Team: #{c_hash[:team]}\n"
         count+=1
       end
+
+      c_l += "*************************************************\n\n\0"
 
       # Returns list of all ciphers with team name and comment
       return c_l
@@ -84,15 +99,15 @@ class Server
 
       if cipher[:plain] == text and cipher[:team] == team_name
         @score[team_name] += 10
-        return "Solved your own cipher!"
+        return "Solved your own cipher!\0"
       
       elsif cipher[:plain] == text and cipher[:team] != team_name
         @score[team_name] += 2
         @score[cipher[:team]] -= 1
-        return "Solved other teams' cipher."
+        return "Solved other teams' cipher.\0"
       
       else
-        return "Wrong submission"
+        return "Wrong submission\0"
       end
 
     end
@@ -104,9 +119,17 @@ class Server
       Thread.start(@server.accept) do | client |
         type, t_name, u_name = client.gets.chomp.split(':')
 
+        if t_name == nil or u_name == nil or type == nil
+          client.puts "Invalid: Login.\0"
+          Thread.kill self
+        end
+
         @users.each do |username, details|
           if username == u_name
-            client.puts "This username already exists."
+            client.puts "Invalid: This username already exists.\0"
+            Thread.kill self
+          elsif details[:team] == t_name and details[:type] == type
+            client.puts "Invalid: Team login.\0"
             Thread.kill self
           end
         end
@@ -114,9 +137,11 @@ class Server
         # Initialize User
         @users[u_name] = Hash.new
         @users[u_name][:team] = t_name
+        @users[u_name][:type] = type
 
         # Initialize score
         @score[t_name] = 0
+        client.puts "\n\0"
         
         listen_user_messages( u_name, client )
       end
