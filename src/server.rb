@@ -1,6 +1,7 @@
 # Contains Server Code
 require "highline/import"
 require "socket"
+require "json"
 
 class Server
   
@@ -14,14 +15,22 @@ class Server
 
     # Game data
     @score = Hash.new
+    @score = JSON.parse(File.read("../save_data/score.json"))
     @public_ciphers = []
     
     run
   end
 
+  # Writes score to file, just in case the server goes down duting game time.
+  def write_score
+    File.open("../save_data/score.json", "w") do |f|
+        f.write(@score.to_json)
+    end
+  end
+
   # Used to parse messages incoming to the server. Takes appropriate action.
   def parse_message(message, username)
-  	if message.include? 'scoreboard'
+    if message.include? 'scoreboard'
   		  
       s_b = ""
       s_b += "************************************************\n"
@@ -62,6 +71,7 @@ class Server
 
       # Reduce team score for publishing a cipher by 5
       @score[team_name] -= 5
+      write_score
       
       pub = ""
       pub += "*************************************************\n"
@@ -91,7 +101,8 @@ class Server
     elsif message.include? 'solve'
 
       # Split message to get all fields
-      solve, number, text = message.split(':')
+      message = message.split(":")
+      number, text = message[1], message[2]
       
       # Cipher the user wants to solve
       cipher = @public_ciphers[(number.to_i)-1]
@@ -99,6 +110,7 @@ class Server
 
       if cipher[:plain] == text and cipher[:team] == team_name
         @score[team_name] += 10
+        write_score
         return "Solved your own cipher!\0"
       
       elsif cipher[:plain] == text and cipher[:team] != team_name
