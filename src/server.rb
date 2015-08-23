@@ -1,5 +1,6 @@
+#!/usr/bin/env ruby
+
 # Contains Server Code
-require "highline/import"
 require "socket"
 require "json"
 
@@ -9,14 +10,13 @@ class Server
   def initialize( port, ip )
   	# Used to open the TCP socket on the given port
     @server = TCPServer.open( ip, port )
-    
-    # Contains details of users connected to the server.
-    @users = Hash.new
 
     # Game data
     @score = Hash.new
     @score = JSON.parse(File.read("../save_data/score.json"))
     @public_ciphers = []
+
+    @login = load_login_info
     
     run
   end
@@ -28,9 +28,13 @@ class Server
     end
   end
 
+  def load_login_info
+    return JSON.parse(File.read("../save_data/login.json"))
+  end
+
   # Used to parse messages incoming to the server. Takes appropriate action.
-  def parse_message(message, username)
-    if message.include? 'scoreboard'
+  def parse_message(message, team_name)
+     if message.include? 'scoreboard'
   		  
       s_b = ""
       s_b += "************************************************\n"
@@ -63,7 +67,6 @@ class Server
       new_cipher[:cipher]  = data[1]
       new_cipher[:comment] = data[2]
 
-      team_name = @users[username][:team]
       new_cipher[:team] = team_name
 
       # Adds the new cipher to the existing list
@@ -84,7 +87,6 @@ class Server
       
       # Needs beautification
       c_l = ""
-      c_l += "*************************************************\n"
       # Variable for indexing into the cipher array
       count=1
 
@@ -106,7 +108,6 @@ class Server
       
       # Cipher the user wants to solve
       cipher = @public_ciphers[(number.to_i)-1]
-      team_name = @users[username][:team]
 
       if cipher[:plain] == text and cipher[:team] == team_name
         @score[team_name] += 10
@@ -116,12 +117,13 @@ class Server
       elsif cipher[:plain] == text and cipher[:team] != team_name
         @score[team_name] += 2
         @score[cipher[:team]] -= 1
-        return "Solved other teams' cipher.\0"
+        return "Solved other teams' cipher!\0"
       
       else
-        return "Wrong submission\0"
+        return "Wrong submission.\0"
       end
-
+    else
+      return "Wrong input.\0"
     end
   end
 
@@ -129,42 +131,34 @@ class Server
   def run
     loop {
       Thread.start(@server.accept) do | client |
-        type, t_name, u_name = client.gets.chomp.split(':')
+        t_name, password = client.gets.chomp.split(':')
 
-        if t_name == nil or u_name == nil or type == nil
+        if t_name == nil
           client.puts "Invalid: Login.\0"
+          Thread.kill self
+        elsif @login[t_name] != password
+          client.puts "Invalid Login.\0"
           Thread.kill self
         end
 
-        @users.each do |username, details|
-          if username == u_name
-            client.puts "Invalid: This username already exists.\0"
-            Thread.kill self
-          elsif details[:team] == t_name and details[:type] == type
-            client.puts "Invalid: Team login.\0"
-            Thread.kill self
-          end
+        # Initialize score
+        if @score[t_name] == nil
+          @score[t_name] = 0
+          write_score
         end
 
-        # Initialize User
-        @users[u_name] = Hash.new
-        @users[u_name][:team] = t_name
-        @users[u_name][:type] = type
-
-        # Initialize score
-        @score[t_name] = 0
         client.puts "\n\0"
         
-        listen_user_messages( u_name, client )
+        listen_user_messages( t_name, client )
       end
     }.join
   end
 
   # Listens for user messages.
-  def listen_user_messages( username, client )
+  def listen_user_messages( team_name, client )
     loop {
       msg = client.gets.chomp
-      str = parse_message(msg, username)
+      str = parse_message(msg, team_name)
       client.puts str
     }
   end

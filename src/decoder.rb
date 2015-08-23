@@ -33,11 +33,10 @@ class Client
     end
   end
 
-  # Needs to be polished.
   def send
-    puts "Decoder Login(TeamName:Username):"
+    puts "Decoder Login(TeamName:Password)"
     msg = $stdin.gets.chomp
-    @server.puts('decoder:'+msg)    
+    @server.puts(msg)    
     msg = @server.gets("\0").chomp("\0")
 
     if msg.include? "Invalid"
@@ -46,7 +45,8 @@ class Client
     end
 
     loop {
-      option = ask @prompt
+      print @prompt
+      option = gets.chomp
       msg = choose_option(option.to_i)
       @server.puts( msg )
       msg = @server.gets("\0").chomp("\0")

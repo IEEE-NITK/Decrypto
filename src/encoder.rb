@@ -1,5 +1,4 @@
 # Contains Encoder code
-require "highline/import"
 require "socket"
 require 'thread'
 
@@ -10,7 +9,8 @@ class Client
     @prompt = "*************************************************\n"
     @prompt += "Welcome to Decrypto. Choose one of the options: *\n"
     @prompt += "1. Scoreboard                                   *\n"
-    @prompt += "2. Generate a cipher!                           *\n"
+    @prompt += "2. Generate a random string!                    *\n"
+    @prompt += "# Warning: Generating a new string gives -5     *\n"
     @prompt += "*************************************************\n\n"
     @prompt += "> "
 
@@ -47,9 +47,9 @@ class Client
 
   # Needs to be polished.
   def send
-    puts "Encoder Login(TeamName:Username):"
+    puts "Encoder Login(TeamName:Password)"
     msg = $stdin.gets.chomp
-    @server.puts("encoder:"+msg)
+    @server.puts(msg)
     msg = @server.gets("\0").chomp("\0")
 
     if msg.include? "Invalid"
@@ -58,7 +58,8 @@ class Client
     end
 
     loop {
-      option = ask @prompt
+      print @prompt
+      option = gets.chomp
       msg = choose_option(option.to_i)
       @server.puts( msg )
       msg = @server.gets("\0").chomp("\0")
