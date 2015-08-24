@@ -9,7 +9,7 @@ class Server
   # Used to initialize server variables 
   def initialize( port, ip )
   	# Used to open the TCP socket on the given port
-    @server = TCPServer.open( ip, port )
+    @server = TCPServer.new( port )
 
     # Game data
     @score = Hash.new
@@ -34,7 +34,7 @@ class Server
 
   # Used to parse messages incoming to the server. Takes appropriate action.
   def parse_message(message, team_name)
-     if message.include? 'scoreboard'
+    if message.include? 'scoreboard'
   		  
       s_b = ""
       s_b += "************************************************\n"
