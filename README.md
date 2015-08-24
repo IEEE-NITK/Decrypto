@@ -8,7 +8,7 @@ The event consists of a team divided into two parties - Encoder and 2*Decoders.
 Will be given an option to generate a random string of characters. They will be encrypted using one of the many encryption schemes provided to them. Ciphertext will be made public along with a comment which is supposed to be understood only to decoders from the same team.
 
 `Decoders`:
-Will be given access to all the ciphers.
+Will be given access to all the ciphers. Based on the comments provided by the encoders they will have to solve the particular problem.
 
 ### Scoring system:
 
@@ -18,8 +18,13 @@ Will be given access to all the ciphers.
 * If your cipher gets solved  `-1`<br>
 
 ### Setting up
-Start `server.rb`.<br>
-You can then start `encoder.rb` and `decoder.rb` as required.
+Start `server.rb`, `encoder.rb` and `decoder.rb`.<br>
+For encoder: `nc localhost 3001`<br>
+For decoder: `nc localhost 3002`<br>
+
+(You can change the IP/ports in the corresponding files)
+
+Requirements: Ruby
 
 ### Contributing
 1. Create a branch as -> `handle-dev` for example -> `chinmay_dd-dev`.
