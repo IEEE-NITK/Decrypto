@@ -1,6 +1,7 @@
 # Contains Encoder code
 require "socket"
 require 'thread'
+require "word_salad"
 
 class Client
     def initialize
@@ -19,8 +20,7 @@ class Client
 
     # Used to generate a random string of 10(subject to change) characters and format the plaintext, ciphertext and comment in a way so that the server understands the structure of the string.
     def rand_string(client)
-        str = (0...10).map { ('a'..'z').to_a[rand(26)] }.join
-        str = "flag{" + str + "}"
+        str = 1.word
 
         # Asking for cipher from EaaS
         client.puts "\n************************************************\n"

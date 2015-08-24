@@ -24,7 +24,7 @@ For decoder: `nc localhost 3002`<br>
 
 (You can change the IP/ports in the corresponding files)
 
-Requirements: Ruby
+Requirements: Ruby, WordSalad(`sudo gem install word_salad`)
 
 ### Contributing
 1. Create a branch as -> `handle-dev` for example -> `chinmay_dd-dev`.
