@@ -20,7 +20,10 @@ class Client
 
     # Used to generate a random string of 10(subject to change) characters and format the plaintext, ciphertext and comment in a way so that the server understands the structure of the string.
     def rand_string(client)
-        str = 1.word
+        str = ""
+        while str.length < 4 or str.length > 6
+            str = 1.word
+        end
 
         # Asking for cipher from EaaS
         client.puts "\n************************************************\n"
