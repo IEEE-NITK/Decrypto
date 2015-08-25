@@ -27,10 +27,17 @@ For decoder: `nc localhost 3002`<br>
 Requirements: Ruby, WordSalad(`sudo gem install word_salad`)
 
 ### Contributing
-1. Create a branch as -> `handle-dev` for example -> `chinmay_dd-dev`.
+1. Create a branch as - `handle-dev` ,for example - `chinmay_dd-dev`.
 2. Create a PR to master. Make sure to include a simple changelog.
 3. IMPORTANT - Master should contain only stable code.
 4. Commit messages should be in present tense preferably.
 5. Make sure to write decent comments for complex methods.
+
+### Roadmap
+1. Implement a messaging system between encoders of one team with the decoders of another team and vice versa.This will bring out some fun in the game.
+2. Add profiling for Decoders and Encoders seperately.
+3. Add an event-logger(also log events to a file).
+4. Improve cipher listing UI.
+5. Add an `admin` account.
 
 This project is under MIT license.
