@@ -115,8 +115,8 @@ class Server
             return pp("Solved your own cipher!")
         else
             update_score(team_name, 10)
-            update_score(cipher[:team], -5)
-            update_cipher_solves(index, team_name)
+            update_score(cipher[:team], (-5))
+            update_cipher_solves(index.to_i, team_name)
             return pp("Solved other teams' cipher!.")
         end
     end
@@ -151,14 +151,16 @@ class Server
         cipher[:team]  = "5"
 
         @public_ciphers.push cipher
+
+        @score["5"] = 0
     end
 
     def load_score
-        JSON.parse(File.read("Decrypto/save_data/score.json"))
+        JSON.parse(File.read("save_data/score.json"))
     end
     
     def load_login
-        JSON.parse(File.read("Decrypto/save_data/login.json"))
+        JSON.parse(File.read("save_data/login.json"))
     end
 
     ###########################
@@ -170,7 +172,7 @@ class Server
     end
 
     def write_score
-        File.open("Decrypto/save_data/score.json", "w") do |f|
+        File.open("save_data/score.json", "w") do |f|
             f.write(@score.to_json)
         end
     end
@@ -267,7 +269,7 @@ class Server
         string += "Cipher: #{c_hash[:cipher]}  "
         string += "Comment: #{c_hash[:comment]}  "
         string += "Team: #{c_hash[:team]}  "
-        string += "Solves : #{c_hash[:solved].length}"
+        string += "Solves : #{c_hash[:solved].length}\n"
 
         return string
     end

@@ -18,9 +18,10 @@ Will be given access to all the ciphers. Based on the comments provided by the e
 * If your cipher gets solved  `-1`<br>
 
 ### Setting up
-Start `server.rb`, `encoder.rb` and `decoder.rb`.<br>
+Run `game.sh`.
 For encoder: `nc localhost 3001`<br>
 For decoder: `nc localhost 3002`<br>
+To stop the game, run `kill.sh`.
 
 (You can change the IP/ports in the corresponding files)
 
@@ -38,6 +39,5 @@ Requirements: Ruby, WordSalad(`sudo gem install word_salad`)
 2. Add profiling for Decoders and Encoders seperately.
 3. Add an event-logger(also log events to a file).
 4. Improve cipher listing UI.
-5. Add an `admin` account.
 
 This project is under MIT license.
