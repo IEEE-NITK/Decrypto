@@ -87,6 +87,8 @@ class Server
         new_cipher  = generate_cipher(message, team_name)
         @public_ciphers.push new_cipher
         update_score(team_name, -5)
+        
+        log("Team #{team_name} publishes a cipher!")
 
         return pp("Published")
     end
@@ -112,11 +114,17 @@ class Server
         if solved_by_same_team?(cipher, team_name)
             update_score(team_name, 10)
             update_cipher_solves(index, team_name)
+
+            log("Team #{team_name} solves their own cipher!")
+
             return pp("Solved your own cipher!")
         else
             update_score(team_name, 10)
             update_score(cipher[:team], (-5))
             update_cipher_solves(index.to_i, team_name)
+
+            log("Team #{team_name} solves team #{cipher[:team]}'s cipher!")
+
             return pp("Solved other teams' cipher!.")
         end
     end
@@ -180,6 +188,10 @@ class Server
     def wrong_submission
         pp("Wrong input.")
     end 
+
+    def log(string)
+        puts string
+    end
 
     ###########################
     # Validator Methods       #
