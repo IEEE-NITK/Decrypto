@@ -16,9 +16,10 @@ class Server
 
         @server = TCPServer.new( port )
 
-        intitialize_score
+        initialize_score
         initialize_cipher
         initialize_login
+        initialize_dummy_ciphers
 
         run
     end
@@ -32,7 +33,7 @@ class Server
             Thread.start(@server.accept) do | client |
                 t_name, password = client.gets.chomp.split(':')
 
-                if t_name == nil or @login[t_name] != password
+                if t_name == nil or @login[t_name] != password or password == nil
                     client.puts pp("Invalid: Login.")
                     Thread.kill self
                 end
@@ -58,7 +59,7 @@ class Server
     ##############################################
 
     def parse_message(message, team_name)
-        case 
+        case
         when is_scoreboard?(message) then scoreboard
         when is_cipher?(message)     then publish(message, team_name)
         when is_listing?(message)    then listing
@@ -82,7 +83,9 @@ class Server
     end
 
     def publish(message, team_name)
-        new_cipher        = generate_cipher(message, team_name)
+
+        new_cipher  = generate_cipher(message, team_name)
+        @public_ciphers.push new_cipher
         update_score(team_name, -5)
 
         return pp("Published")
@@ -99,7 +102,7 @@ class Server
 
     def solve(message, team_name)
         index, text = get_plaintext(message)
-        return pp("Wrong Submission.")           if !valid_cipher?(index)
+        return pp("Wrong Submission.")           if index == 0
 
         cipher = get_cipher(index)
 
@@ -112,7 +115,8 @@ class Server
             return pp("Solved your own cipher!")
         else
             update_score(team_name, 10)
-            update_score(cipher[:team_name], -5)
+            update_score(cipher[:team], -5)
+            update_cipher_solves(index, team_name)
             return pp("Solved other teams' cipher!.")
         end
     end
@@ -131,19 +135,30 @@ class Server
     end
 
     def initialize_cipher
-        @public_cipher = []
+        @public_ciphers = []
     end
 
     def initialize_login
         @login = load_login
     end
 
+    def initialize_dummy_ciphers
+        cipher = Hash.new
+        cipher[:plain]      = "hello"
+        cipher[:cipher]     = "dolla"
+        cipher[:comment]    = "Comon"
+        cipher[:solved]     = []
+        cipher[:team]  = "5"
+
+        @public_ciphers.push cipher
+    end
+
     def load_score
-        JSON.parse(File.read("../save_data/score.json"))
+        JSON.parse(File.read("Decrypto/save_data/score.json"))
     end
     
     def load_login
-        JSON.parse(File.read("../save_data/login.json"))
+        JSON.parse(File.read("Decrypto/save_data/login.json"))
     end
 
     ###########################
@@ -151,11 +166,11 @@ class Server
     ###########################
 
     def pp(string)
-        "********************************\n" + string + "**********************************\n\0"
+        "************************************************\n" + string + "\n************************************************\n\0"
     end
 
     def write_score
-        File.open("../save_data/score.json", "w") do |f|
+        File.open("Decrypto/save_data/score.json", "w") do |f|
             f.write(@score.to_json)
         end
     end
@@ -179,12 +194,12 @@ class Server
         message.include? "listing"
     end
 
-    def is_solve?(message)
+    def is_attempt?(message)
         message.include? "solve"
     end
 
     def valid_cipher?(index)
-        !(index==0)
+        index == 0
     end
 
     def already_solved?(cipher, team_name)
@@ -237,21 +252,21 @@ class Server
         end        
 
         cipher = Hash.new
-        cipher[:plain] = cipher_data[0]
-        cipher[:cipher] = cipher_data[1]
-        cipher[:comment] = cipher_data[2]
-        cipher[:solved] = []
-        cipher[:team_name] = team_name
+        cipher[:plain]      = cipher_data[0]
+        cipher[:cipher]     = cipher_data[1]
+        cipher[:comment]    = cipher_data[2]
+        cipher[:solved]     = []
+        cipher[:team_name]  = team_name
 
         return cipher
     end
 
     def add_hash(c_hash, index)
         string = ""
-        string += "#{index}."
-        string += "Cipher: #{c_hash[:cipher]}"
-        string += "Comment: #{c_hash[:comment]}"
-        string += "Team: #{c_hash[:team]}"
+        string += "#{index+1}. "
+        string += "Cipher: #{c_hash[:cipher]}  "
+        string += "Comment: #{c_hash[:comment]}  "
+        string += "Team: #{c_hash[:team]}  "
         string += "Solves : #{c_hash[:solved].length}"
 
         return string
