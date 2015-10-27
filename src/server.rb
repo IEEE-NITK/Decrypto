@@ -73,6 +73,7 @@ class Server
     # Message parsing actions #
     ###########################
 
+    # Returns scoreboard string
     def scoreboard
         score_string = ""
         board        = get_scoreboard
@@ -82,6 +83,7 @@ class Server
         return pp(score_string)
     end
 
+    # Adds published message
     def publish(message, team_name)
 
         new_cipher  = generate_cipher(message, team_name)
@@ -93,6 +95,7 @@ class Server
         return pp("Published")
     end
 
+    # Returns string with cipher listing
     def listing
         cipher_string = ""
         @public_ciphers.each_with_index do |c_hash, index|
@@ -102,6 +105,7 @@ class Server
         return pp(cipher_string)
     end
 
+    # Checks if a team solves their cipher and returns appropriate string
     def solve(message, team_name)
         index, text = get_plaintext(message)
         return pp("Wrong Submission.")           if index == 0
