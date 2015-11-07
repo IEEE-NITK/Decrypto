@@ -5,6 +5,7 @@ require "word_salad"
 
 class Client
     def initialize
+        # initializes a server to host Encoder service at port 3001
         @encodeserver = TCPServer.new( 3001 ) 
 
         @prompt = "*************************************************\n"
@@ -21,6 +22,8 @@ class Client
     # Used to generate a random string of 10(subject to change) characters and format the plaintext, ciphertext and comment in a way so that the server understands the structure of the string.
     def rand_string(client)
         str = ""
+
+        # Generates a random english word of length 4-6 alphabets
         while str.length < 4 or str.length > 6
             str = 1.word
         end
@@ -28,7 +31,7 @@ class Client
         # Asking for cipher from EaaS
         client.puts "\n************************************************\n"
         client.puts "Your random string is - #{str}"
-        client.puts "Enter the ciphertext using the EaaS provided -"
+        client.puts "Enter your ciphertext -"
         cipher = client.gets.chomp
 
         # Taking comment input
@@ -49,7 +52,6 @@ class Client
         end
     end
 
-    # Needs to be polished.
     def send
         loop {
             Thread.start(@encodeserver.accept) do |client|
@@ -78,4 +80,5 @@ class Client
     end
 end
 
+# Create a new client
 Client.new

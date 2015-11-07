@@ -1,10 +1,10 @@
 # Contains Decoder code
-require "highline/import"
 require "socket"
 require 'thread'
 
 class Client
     def initialize
+        # Initialising a server to host Decoder service at port 3002
         @decodeserver = TCPServer.new( 3002 )
 
         @prompt = "*************************************************\n"
@@ -61,4 +61,5 @@ class Client
     end
 end
 
+# Create a new client
 Client.new
