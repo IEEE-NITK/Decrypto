@@ -20,15 +20,35 @@ class Client
 
     # Take answer as input and send to server for validation
     def solve(client)
-        str = client.gets.chomp
-        return "solve:"+str
+        str = client.gets.chomp.split(':')
+
+        return_obj = {}
+        return_obj['type'] = "solve"
+        return_obj['index'] = str[0]
+        return_obj['text'] = str[1]
+        
+        return return_obj
+    end
+
+    def scoreboard
+        return_obj = {}
+        return_obj['type'] = "scoreboard"
+
+        return return_obj
+    end
+
+    def listing
+        return_obj = {}
+        return_obj['type'] = "listing"
+
+        return return_obj
     end
 
     # User choice
     def choose_option(option, client)
         case option
-        when 1 then return 'scoreboard'
-        when 2 then return 'listing'
+        when 1 then return scoreboard
+        when 2 then return listing
         when 3 then return solve(client)
         end
     end

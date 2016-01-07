@@ -3,6 +3,7 @@
 # Contains Server Code, yet to add comments
 require "socket"
 require "json"
+require "pry"
 
 class Server
 
@@ -48,7 +49,7 @@ class Server
 
     def listen_user_messages( team_name, client )
         loop {
-            msg = client.gets.chomp
+            msg = eval(client.gets)
             str = parse_message(msg, team_name)
             client.puts str
         }
@@ -107,7 +108,7 @@ class Server
 
     # Checks if a team solves their cipher and returns appropriate string
     def solve(message, team_name)
-        index, text = get_plaintext(message)
+        index, text = message['index'].to_i, message['text']
         return pp("Wrong Submission.")           if index == 0
 
         cipher = get_cipher(index)
@@ -156,15 +157,15 @@ class Server
 
     def initialize_dummy_ciphers
         cipher = Hash.new
-        cipher[:plain]      = "hello"
+        cipher[:plain]      = "holla"
         cipher[:cipher]     = "dolla"
-        cipher[:comment]    = "Comon"
+        cipher[:comment]    = "Farm"
         cipher[:solved]     = []
-        cipher[:team]  = "5"
+        cipher[:team]  = "Dummy"
 
         @public_ciphers.push cipher
 
-        @score["5"] = 0
+        @score["Dummy"] = 0
     end
 
     def load_score
@@ -202,18 +203,18 @@ class Server
     ###########################
 
     def is_scoreboard?(message)
-        message.include? "scoreboard"
+        message['type'] == "scoreboard"
     end
     
     def is_cipher?(message)
-       message.include? "plain->" and message.include? "cipher->" and message.include? "comment->"
+       message['type'] == "cipher"
     end
     def is_listing?(message)
-        message.include? "listing"
+        message['type'] == "listing"
     end
 
     def is_attempt?(message)
-        message.include? "solve"
+        message['type'] == "solve"
     end
 
     def valid_cipher?(index)
@@ -242,12 +243,7 @@ class Server
 
     def get_scoreboard
         @score.sort_by {|key, value| value}.reverse
-    end    
-
-    def get_plaintext(message)
-        message = message.split(":")
-        return message[1].to_i, message[2]
-    end   
+    end
 
     ###########################
     # Setter Methods          #
@@ -263,16 +259,12 @@ class Server
     end
 
     def generate_cipher(message, team_name)
-        cipher_data = []
-
-        message.split(",").each do |str|
-            cipher_data.push str.split("->")[1]
-        end        
+        cipher_data = [] 
 
         cipher = Hash.new
-        cipher[:plain]      = cipher_data[0]
-        cipher[:cipher]     = cipher_data[1]
-        cipher[:comment]    = cipher_data[2]
+        cipher[:plain]      = message['plain']
+        cipher[:cipher]     = message['cipher']
+        cipher[:comment]    = message['comment']
         cipher[:solved]     = []
         cipher[:team_name]  = team_name
 

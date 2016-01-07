@@ -38,16 +38,27 @@ class Client
         client.puts "Enter a comment -"
         comment = client.gets.chomp
 
-        # Generation of the string
-        return_string = "plain->"+str+",cipher->"+cipher+",comment->"+comment
+        # Generation of hash to return
+        return_obj = {};
+        return_obj['type'] = "cipher"
+        return_obj['plain'] = str
+        return_obj['cipher'] = cipher
+        return_obj['comment'] = comment
 
-        return return_string
+        return return_obj
+    end
+
+    def scoreboard
+        return_obj = {}
+        return_obj['type'] = 'scoreboard'
+
+        return return_obj
     end
 
     # User choice
     def choose_option(option, client)
         case option 
-        when 1 then return 'scoreboard'
+        when 1 then return scoreboard
         when 2 then return rand_string(client)
         end
     end
